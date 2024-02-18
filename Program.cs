@@ -9,17 +9,20 @@
     {
         public Dictionary<string, int> env;
         public Dictionary<string, Func> funcs;
+        public Dictionary<string, List<int>> arrays;
         public Env parent = null;
         public Env()
         {
             env = new Dictionary<string, int>();
             funcs = new Dictionary<string, Func>();
+            arrays = new Dictionary<string, List<int>>();
         }
         public Env(ref Env env)
         {
             this.parent = env;
             this.env = new Dictionary<string, int>();
             this.funcs = new Dictionary<string, Func>();
+            this.arrays = new Dictionary<string, List<int>>();
         }
         public void set(string var, int val)
         {
@@ -145,6 +148,31 @@
         {
             return e1.eval(env) * e2.eval(env);
         }
+    }
+
+    class Sub : Exp
+    {
+        private Exp e1, e2;
+        public Sub(Exp e1, Exp e2)
+        {
+            this.e1 = e1;
+            this.e2 = e2;
+        }
+        public int eval(Env env)
+        {
+            return e1.eval(env) - e2.eval(env);
+        }
+    }
+
+    class Div : Exp
+    {
+        private Exp e1, e2;
+        public Div(Exp e1, Exp e2)
+        {
+            this.e1 = e1;
+            this.e2 = e2;
+        }
+        public int eval(Env env) { return e1.eval(env) / e2.eval(env); }
     }
     #endregion
 
@@ -393,8 +421,8 @@
                             new Lt(new Eval("i"), new Num(3)),
                             new Num(1),
                             new Add(
-                                new FuncCall("fib", new List<Exp>{ new Add(new Eval("i"), new Num(-1)) }),
-                                new FuncCall("fib", new List<Exp>{ new Add(new Eval("i"), new Num(-2)) })
+                                new FuncCall("fib", new List<Exp>{ new Sub(new Eval("i"), new Num(1)) }),
+                                new FuncCall("fib", new List<Exp>{ new Sub(new Eval("i"), new Num(2)) })
                             )
                         )
                     })
@@ -404,7 +432,7 @@
                     new Sequence(new List<Exp>
                     {
                         new PrintNum(new FuncCall("fib", new List<Exp>{ new Eval("i")})),
-                        new Assign("i", new Add(new Eval("i"), new Num(-1))),
+                        new Assign("i", new Sub(new Eval("i"), new Num(1))),
                     })),
             });
             Console.WriteLine(program.eval(env));
